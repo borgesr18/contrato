@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs';
+import fs from 'fs';
 import path from 'path';
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
@@ -15,6 +16,7 @@ export default async function handler(req, res) {
   // Carrega o documento do contrato modelo
   const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
   const content = await fs.readFile(templatePath, 'binary');
+  const content = fs.readFileSync(templatePath, 'binary');
 
   const zip = new PizZip(content);
   const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
@@ -32,6 +34,7 @@ export default async function handler(req, res) {
   // Salva o contrato preenchido na raiz do projeto
   const outputPath = path.join(process.cwd(), filename);
   await fs.writeFile(outputPath, buf);
+  const filename = 'ContratoPreenchido.docx';
 
   // Configuração do Nodemailer (use variáveis de ambiente para credenciais reais)
   const transporter = nodemailer.createTransport({
@@ -48,6 +51,7 @@ export default async function handler(req, res) {
     await transporter.sendMail({
       from: process.env.SMTP_FROM || 'contrato@example.com',
       to: 'meuemail@exemplo.com',
+      to: process.env.TO_EMAIL || 'destino@example.com',
       subject: 'Contrato preenchido',
       text: 'Segue o contrato preenchido em anexo.',
       attachments: [
@@ -62,4 +66,12 @@ export default async function handler(req, res) {
   }
 
   return res.status(200).json({ status: 'success' });
+export default function handler(req, res) {
+  if (req.method === 'POST') {
+    const data = req.body;
+    // Aqui, você pode processar os dados recebidos conforme necessário
+    return res.status(200).json({ message: 'Dados recebidos', data });
+  }
+  res.setHeader('Allow', ['POST']);
+  res.status(405).end(`Method ${req.method} Not Allowed`);
 }

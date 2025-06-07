@@ -9,6 +9,10 @@
   "dependencies": {
     "next": "14.2.3",
     "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "docxtemplater": "^3.38.0",
+    "pizzip": "^3.1.5",
+    "nodemailer": "^6.9.11"
     "react-dom": "18.2.0"
   },
   "devDependencies": {

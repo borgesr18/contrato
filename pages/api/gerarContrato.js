@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
   // Carrega o documento do contrato modelo
   const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
-  const content = fs.readFileSync(templatePath, 'binary');
+  const content = await fs.readFile(templatePath, 'binary');
 
   const zip = new PizZip(content);
   const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });

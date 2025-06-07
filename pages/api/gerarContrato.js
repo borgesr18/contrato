@@ -1,3 +1,4 @@
+import { promises as fs } from 'fs';
 import fs from 'fs';
 import path from 'path';
 import Docxtemplater from 'docxtemplater';
@@ -14,6 +15,7 @@ export default async function handler(req, res) {
 
   // Carrega o documento do contrato modelo
   const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
+  const content = await fs.readFile(templatePath, 'binary');
   const content = fs.readFileSync(templatePath, 'binary');
 
   const zip = new PizZip(content);
@@ -27,6 +29,11 @@ export default async function handler(req, res) {
   }
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' });
+  const filename = 'Contrato Preenchido.docx';
+
+  // Salva o contrato preenchido na raiz do projeto
+  const outputPath = path.join(process.cwd(), filename);
+  await fs.writeFile(outputPath, buf);
   const filename = 'ContratoPreenchido.docx';
 
   // Configuração do Nodemailer (use variáveis de ambiente para credenciais reais)
@@ -43,6 +50,7 @@ export default async function handler(req, res) {
   try {
     await transporter.sendMail({
       from: process.env.SMTP_FROM || 'contrato@example.com',
+      to: 'meuemail@exemplo.com',
       to: process.env.TO_EMAIL || 'destino@example.com',
       subject: 'Contrato preenchido',
       text: 'Segue o contrato preenchido em anexo.',

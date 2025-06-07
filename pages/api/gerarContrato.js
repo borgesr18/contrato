@@ -8,13 +8,11 @@ import nodemailer from 'nodemailer';
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-
-  const data = req.body;
-
-  // Carrega o documento do contrato modelo
-  const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
+  // Configuração do Nodemailer utilizando a conta do Gmail fornecida
+    service: 'gmail',
+      user: 'contratovitorino@gmail.com',
+      pass: 'pwwf mnxs hmcs dwec',
+      from: 'contratovitorino@gmail.com',
   const content = await fs.readFile(templatePath, 'binary');
   const content = fs.readFileSync(templatePath, 'binary');
 

@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
     'Profissão': data.profissao,
+    Profissao: data.profissao,
     CPF: data.cpf,
     RG: data.rg,
     Emissor: data.orgaoRg,
@@ -76,6 +77,7 @@ export default async function handler(req, res) {
     console.error('Falha ao salvar contrato:', err);
     // continua mesmo se nao conseguir salvar o arquivo
   }
+  await fs.writeFile(outputPath, buffer);
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -104,6 +106,7 @@ export default async function handler(req, res) {
       error: 'Falha ao enviar email',
       details: err.message,
     });
+    return res.status(500).json({ error: 'Falha ao enviar email' });
   }
 
   return res.status(200).json({ status: 'success' });

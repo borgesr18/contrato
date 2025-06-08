@@ -12,6 +12,11 @@ export default async function handler(req, res) {
 
   const data = req.body;
 
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error('EMAIL_USER or EMAIL_PASS environment variable not set');
+    return res.status(500).json({ error: 'Email configuration missing' });
+  }
+
   // Map the received fields to the placeholders in the document
   const templateData = {
     Comprador: data.nome,
@@ -40,7 +45,12 @@ export default async function handler(req, res) {
   const content = await fs.readFile(templatePath, 'binary');
   let zip = new PizZip(content);
 
-  // Fix placeholders split by Word correction marks
+  try {
+    await fs.writeFile(outputPath, buffer);
+  } catch (err) {
+    console.error('Falha ao salvar contrato:', err);
+    // continua mesmo se nao conseguir salvar o arquivo
+  }
   let xml = zip.file('word/document.xml').asText();
   xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
   const splitTag = /\[([A-Za-z0-9 \u00C0-\u00FF]+)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g;

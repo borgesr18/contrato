@@ -25,6 +25,8 @@ This project uses Next.js and Tailwind CSS to create a contract generation form 
 - Ensure that the Word template contains the placeholders `[EstadoCivil]` and `[Profissão]`.
 Create a `.env.local` file in the project root (see `.env.local.example` for reference) and define the Gmail credentials used to send the contract:
 
+**Importante:** este arquivo contem dados sensíveis e não deve ser versionado no Git.
+
 ## Email configuration
 
 Create a `.env.local` file in the project root and define the Gmail credentials used to send the contract:

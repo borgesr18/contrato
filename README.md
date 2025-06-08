@@ -20,6 +20,5 @@ This project uses Next.js and Tailwind CSS to create a contract generation form 
 
 ## Functionality
 
-- The form in `pages/index.js` collects user data and posts it to `/api/gerarContrato`.
-- The API fills `Contrato Vitorino.docx` with the provided data using Docxtemplater, saves the result, and emails it to `meuemail@exemplo.com`.
-
+- The form in `pages/index.js` collects user data (including Estado civil and Profissão) and posts it to `/api/gerarContrato`.
+- The API fills `Contrato Vitorino.docx` with the provided data using Docxtemplater, saves the result, and emails it using the credentials defined in `EMAIL_USER` and `EMAIL_PASS` environment variables.

@@ -12,13 +12,37 @@ export default async function handler(req, res) {
 
   const data = req.body;
 
+  // Mapeia os campos recebidos para os placeholders do documento
+  const templateData = {
+    Comprador: data.nome,
+    CPF: data.cpf,
+    RG: data.rg,
+    Emissor: data.orgaoRg,
+    'Endereço': data.endereco,
+    'Número': data.numero,
+    Complemento: data.complemento,
+    Bairro: data.bairro,
+    Cidade: data.cidade,
+    CEP: data.cep,
+    Quadra: data.quadra,
+    Lote: data.lote,
+    Testemunha: `${data.testemunha1Nome} e ${data.testemunha2Nome}`,
+    'CPF Test': `${data.testemunha1Cpf} e ${data.testemunha2Cpf}`,
+  };
+
   // Carrega o documento do contrato modelo
   const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
   const content = await fs.readFile(templatePath, 'binary');
 
   const zip = new PizZip(content);
-  const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-  doc.setData(data);
+  const parser = (tag) => ({ get: (scope) => scope[tag] });
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks: true,
+    delimiters: { start: '[', end: ']' },
+    parser,
+  });
+  doc.setData(templateData);
 
   try {
     doc.render();

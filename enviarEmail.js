@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-require('dotenv').config();
+require('dotenv').config(); // Certifique-se de que o .env está na raiz do projeto
 
 (async () => {
   console.log('EMAIL_USER:', process.env.EMAIL_USER);
@@ -16,7 +16,7 @@ require('dotenv').config();
 
     const info = await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: 'rba1807@gmail.com', // ou outro e-mail para teste
+      to: 'rba1807@gmail.com',
       subject: 'Teste simples de envio de e-mail',
       text: 'Se você recebeu esse e-mail, o Gmail está funcionando!',
     });

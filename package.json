@@ -2,8 +2,18 @@
   "name": "contrato",
   "version": "1.0.0",
   "private": true,
+  "description": "Gerador de contratos usando Next.js e Tailwind CSS",
   "scripts": {
-  "dev": "next dev -H 0.0.0.0",
+    "dev": "next dev -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+    "next": "14.2.3",
+    "nodemailer": "^6.10.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   "build": "next build",
   "start": "next start",
   "test": "echo \"Sem testes definidos ainda.\""

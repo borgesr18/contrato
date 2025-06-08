@@ -34,7 +34,15 @@ export default async function handler(req, res) {
   const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
   const content = await fs.readFile(templatePath, 'binary');
 
-  const zip = new PizZip(content);
+  let zip = new PizZip(content);
+
+  // Remove marcadores de correção que quebram os placeholders
+  let xml = zip.file('word/document.xml').asText();
+  xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
+  const splitTag = /\[([A-Za-z0-9 \u00C0-\u00FF]+)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g;
+  xml = xml.replace(splitTag, '[$1]');
+  zip.file('word/document.xml', xml);
+
   const parser = (tag) => ({ get: (scope) => scope[tag] });
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,

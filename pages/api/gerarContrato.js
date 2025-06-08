@@ -23,7 +23,23 @@ export default async function handler(req, res) {
       linebreaks: true,
     });
 
-    doc.setData(data);
+    // Define os dados que serão substituídos no contrato
+    doc.setData({
+      Comprador: data.Comprador,
+      CPF: data.CPF,
+      RG: data.RG,
+      Emissor: data.Emissor,
+      Endereço: data.Endereco,
+      Número: data.Numero,
+      Complemento: data.Complemento,
+      Bairro: data.Bairro,
+      Cidade: data.Cidade,
+      CEP: data.CEP,
+      Quadra: data.Quadra,
+      Lote: data.Lote,
+      Testemunha: data.Testemunha,
+      'CPF Test': data.CPFTestemunha
+    });
 
     try {
       doc.render();

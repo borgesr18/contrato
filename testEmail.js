@@ -1,7 +1,5 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-
-dotenv.config({ path: '.env.local' }); // carrega as variáveis de ambiente
+const nodemailer = require('nodemailer');
+require('dotenv').config({ path: '.env.local' }); // Carrega variáveis do .env.local
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -15,9 +13,9 @@ async function sendTestEmail() {
   try {
     const info = await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: 'rba1807@gmail.com', // ou qualquer e-mail de teste
+      to: 'rba1807@gmail.com',
       subject: 'Teste Nodemailer',
-      text: 'Este é um e-mail de teste enviado via script isolado.',
+      text: 'Este é um e-mail de teste enviado via script standalone.',
     });
 
     console.log('✅ E-mail enviado com sucesso:', info.response);

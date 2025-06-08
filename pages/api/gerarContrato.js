@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   const templateData = {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
-    Profissao: data.profissao,
+    'Profissão': data.profissao,
     CPF: data.cpf,
     RG: data.rg,
     Emissor: data.orgaoRg,

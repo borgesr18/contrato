@@ -88,8 +88,10 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ status: 'success' });
 
-  } catch (err) {
-    console.error('Erro:', err);
-    return res.status(500).json({ error: 'Erro ao gerar ou enviar o contrato', details: err.message });
-  }
+ } catch (err) {
+  console.error('Falha ao enviar email:', err);
+  return res.status(500).json({
+    error: 'Falha ao enviar email',
+    details: err.message,
+  });
 }

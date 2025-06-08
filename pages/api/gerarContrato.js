@@ -17,11 +17,17 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Email configuration missing' });
   }
 
+  // Map the received fields to the placeholders in the document
   // Mapeamento de campos do formulário para o template
   const templateData = {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
     'Profissão': data.profissao,
+    CPF: data.cpf,
+    RG: data.rg,
+    Emissor: data.orgaoRg,
+    Endereço: data.endereco,
+    Número: data.numero,
   const zip = new PizZip(content);
   const xmlPath = 'word/document.xml';
   let xml = zip.file(xmlPath).asText();
@@ -47,6 +53,44 @@ export default async function handler(req, res) {
   // Load and adjust the Word document
   const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
   const content = await fs.readFile(templatePath, 'binary');
+  const zip = new PizZip(content);
+
+  // Fix placeholders possibly split across multiple tags
+  const xmlPath = 'word/document.xml';
+  let xml = zip.file(xmlPath).asText();
+  xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
+  xml = xml.replace(/\[(?:[^\]]|<[^>]+>)*\]/g, (m) => m.replace(/<[^>]+>/g, ''));
+  zip.file(xmlPath, xml);
+
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks: true,
+    delimiters: { start: '[', end: ']' },
+    parser: tag => ({ get: scope => scope[tag] }),
+  });
+
+  doc.setData(templateData);
+
+  try {
+    doc.render();
+  } catch (err) {
+    console.error('Erro ao preencher o contrato:', err);
+    return res.status(500).json({ error: 'Erro ao preencher o contrato' });
+  }
+
+  const buffer = doc.getZip().generate({ type: 'nodebuffer' });
+  const filename = 'Contrato Preenchido.docx';
+  console.log('Buffer size:', buffer.length);
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  try {
   let zip = new PizZip(content);
 
   // Fix placeholders possibly split across multiple tags
@@ -107,11 +151,16 @@ export default async function handler(req, res) {
       text: 'Segue o contrato preenchido em anexo.',
       attachments: [
         {
+          filename,
           filename: 'Contrato Preenchido.docx',
           content: buffer,
         },
       ],
     });
+  } catch (err) {
+    console.error('Falha ao enviar email:', err);
+    return res.status(500).json({
+      error: 'Falha ao enviar email',
 
     return res.status(200).json({ status: 'success' });
 
@@ -122,4 +171,6 @@ export default async function handler(req, res) {
       details: err.message,
     });
   }
+
+  return res.status(200).json({ status: 'success' });
 }

@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-require('dotenv').config({ path: '.env.local' }); // ou '.env' dependendo do seu projeto
+require('dotenv').config({ path: '.env.local' }); // ou '.env' se seu arquivo for esse
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -9,20 +9,17 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-async function sendTestEmail() {
-  try {
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: 'rba1807@gmail.com',
-      subject: 'Teste de envio de e-mail',
-      text: 'Este é um e-mail de teste enviado com nodemailer diretamente via Node.js',
-    });
+const mailOptions = {
+  from: process.env.EMAIL_USER,
+  to: 'rba1807@gmail.com',
+  subject: 'Teste de E-mail',
+  text: 'Este é um teste de envio de e-mail usando nodemailer com Gmail.',
+};
 
-    console.log('✅ E-mail enviado com sucesso:', info.response);
-  } catch (err) {
-    console.error('❌ Falha ao enviar e-mail:', err.message);
-    console.error(err);
+transporter.sendMail(mailOptions, (error, info) => {
+  if (error) {
+    console.error('Erro ao enviar e-mail:', error);
+  } else {
+    console.log('E-mail enviado com sucesso:', info.response);
   }
-}
-
-sendTestEmail();
+});

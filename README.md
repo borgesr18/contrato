@@ -27,7 +27,7 @@ Create a `.env.local` file in the project root (see `.env.local.example` for ref
 
 **Importante:** este arquivo contem dados sensíveis e não deve ser versionado no Git.
 
-## Email configuration
+Se sua conta usar verificação em duas etapas, crie uma senha de aplicativo no painel de segurança do Google e use esse valor em `EMAIL_PASS`.
 
 Create a `.env.local` file in the project root and define the Gmail credentials used to send the contract:
 

@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Email configuration missing' });
   }
 
-  // Dados para preencher os campos do contrato
+  // Mapeamento de campos do formulário para o template
   const templateData = {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
@@ -40,11 +40,12 @@ export default async function handler(req, res) {
   };
 
   try {
+    // Carrega o template .docx
     const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
-    const content = await fs.readFile(templatePath); // ✅ Lê como buffer (sem 'binary')
-    let zip = new PizZip(content);
+    const content = await fs.readFile(templatePath);
 
-    // Correção para placeholders quebrados pelo Word
+    // Corrige problemas causados por marcas do Word
+    let zip = new PizZip(content);
     let xml = zip.file('word/document.xml').asText();
     xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
     xml = xml.replace(
@@ -60,11 +61,13 @@ export default async function handler(req, res) {
       parser: tag => ({ get: scope => scope[tag] }),
     });
 
+    // Preenche os dados no contrato
     doc.setData(templateData);
     doc.render();
 
     const buffer = doc.getZip().generate({ type: 'nodebuffer' });
 
+    // Configura transporte de e-mail
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -73,6 +76,7 @@ export default async function handler(req, res) {
       },
     });
 
+    // Envia o e-mail com o contrato anexado
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: 'rba1807@gmail.com',
@@ -88,10 +92,11 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ status: 'success' });
 
- } catch (err) {
-  console.error('Falha ao enviar email:', err);
-  return res.status(500).json({
-    error: 'Falha ao enviar email',
-    details: err.message,
-  });
+  } catch (err) {
+    console.error('Falha ao gerar ou enviar o contrato:', err);
+    return res.status(500).json({
+      error: 'Falha ao gerar ou enviar o contrato',
+      details: err.message,
+    });
+  }
 }

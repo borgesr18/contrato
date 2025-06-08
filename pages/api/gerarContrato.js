@@ -22,9 +22,10 @@ export default async function handler(req, res) {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
     'Profissão': data.profissao,
-    Profissao: data.profissao,
-    CPF: data.cpf,
-    RG: data.rg,
+  const zip = new PizZip(content);
+  const xmlPath = 'word/document.xml';
+  let xml = zip.file(xmlPath).asText();
+  zip.file(xmlPath, xml);
     Emissor: data.orgaoRg,
     Endereço: data.endereco,
     Número: data.numero,

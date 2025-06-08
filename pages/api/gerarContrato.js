@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
     'Profissão': data.profissao,
+    Profissao: data.profissao,
     CPF: data.cpf,
     RG: data.rg,
     Emissor: data.orgaoRg,
@@ -48,6 +49,14 @@ export default async function handler(req, res) {
   let xml = zip.file('word/document.xml').asText();
   xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
   xml = xml.replace(/\[(?:[^\]]|<[^>]+>)*\]/g, (m) => m.replace(/<[^>]+>/g, ''));
+  // Fix placeholders that Word may split across multiple runs
+  // Fix placeholders split by Word correction marks
+  let xml = zip.file('word/document.xml').asText();
+  xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
+  xml = xml.replace(
+    /<w:t>\[<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>([^<]*)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g,
+    '[$1]'
+  );
   zip.file('word/document.xml', xml);
 
   const doc = new Docxtemplater(zip, {
@@ -69,6 +78,14 @@ export default async function handler(req, res) {
   const buffer = doc.getZip().generate({ type: 'nodebuffer' });
   const filename = 'Contrato Preenchido.docx';
   console.log('Buffer size:', buffer.length);
+  const outputPath = path.join(process.cwd(), filename);
+  try {
+    await fs.writeFile(outputPath, buffer);
+  } catch (err) {
+    console.error('Falha ao salvar contrato:', err);
+    // continua mesmo se nao conseguir salvar o arquivo
+  }
+  await fs.writeFile(outputPath, buffer);
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -97,6 +114,7 @@ export default async function handler(req, res) {
       error: 'Falha ao enviar email',
       details: err.message,
     });
+    return res.status(500).json({ error: 'Falha ao enviar email' });
   }
 
   return res.status(200).json({ status: 'success' });

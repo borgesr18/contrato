@@ -45,11 +45,14 @@ export default async function handler(req, res) {
   const content = await fs.readFile(templatePath, 'binary');
   let zip = new PizZip(content);
 
+  // Fix placeholders that Word may split across multiple runs
   // Fix placeholders split by Word correction marks
   let xml = zip.file('word/document.xml').asText();
   xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
-  const splitTag = /\[([A-Za-z0-9 \u00C0-\u00FF]+)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g;
-  xml = xml.replace(splitTag, '[$1]');
+  xml = xml.replace(
+    /<w:t>\[<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>([^<]*)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g,
+    '[$1]'
+  );
   zip.file('word/document.xml', xml);
 
   const doc = new Docxtemplater(zip, {
@@ -70,6 +73,7 @@ export default async function handler(req, res) {
 
   const buffer = doc.getZip().generate({ type: 'nodebuffer' });
   const filename = 'Contrato Preenchido.docx';
+  console.log('Buffer size:', buffer.length);
   const outputPath = path.join(process.cwd(), filename);
   try {
     await fs.writeFile(outputPath, buffer);

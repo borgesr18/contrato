@@ -23,25 +23,25 @@ export default async function handler(req, res) {
       linebreaks: true,
     });
 
-    // Define os dados que serão substituídos no contrato
-  doc.setData({
-  Comprador: data.nome,
-  CPF: data.cpf,
-  RG: data.rg,
-  Emissor: data.orgaoRg,
-  Endereço: data.endereco,
-  Número: data.numero,
-  Complemento: data.complemento,
-  Bairro: data.bairro,
-  Cidade: data.cidade,
-  CEP: data.cep,
-  Quadra: data.quadra,
-  Lote: data.lote,
-  Testemunha: data.testemunha1Nome,
-  'CPF Test': data.testemunha1Cpf,
-  Testemunha2: data.testemunha2Nome,
-  'CPF Test2': data.testemunha2Cpf
-});
+    // Dados mapeados corretamente
+    doc.setData({
+      Comprador: data.nome,
+      CPF: data.cpf,
+      RG: data.rg,
+      Emissor: data.orgaoRg,
+      Endereço: data.endereco,
+      Número: data.numero,
+      Complemento: data.complemento,
+      Bairro: data.bairro,
+      Cidade: data.cidade,
+      CEP: data.cep,
+      Quadra: data.quadra,
+      Lote: data.lote,
+      Testemunha: data.testemunha1Nome,
+      'CPF Test': data.testemunha1Cpf,
+      Testemunha2: data.testemunha2Nome,
+      'CPF Test2': data.testemunha2Cpf
+    });
 
     try {
       doc.render();
@@ -81,3 +81,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Erro inesperado' });
   }
 }
+

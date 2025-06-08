@@ -22,9 +22,11 @@ export default async function handler(req, res) {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
     'Profissão': data.profissao,
-    Profissao: data.profissao,
-    CPF: data.cpf,
-    RG: data.rg,
+  // Fix placeholders that Word may split across multiple runs
+  xml = xml.replace(
+    /<w:t>\[<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>([^<]*)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g,
+    '[$1]'
+  );
     Emissor: data.orgaoRg,
     Endereço: data.endereco,
     Número: data.numero,

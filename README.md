@@ -25,7 +25,7 @@ This project uses Next.js and Tailwind CSS to create a contract generation form 
 - The API fills `Contrato Vitorino.docx` with the provided data using Docxtemplater and then emails the result using the credentials defined in `EMAIL_USER` and `EMAIL_PASS` environment variables. O arquivo não é salvo em disco no ambiente serverless da Vercel.
 - Ensure that the Word template contains the placeholders `[EstadoCivil]` and `[Profissão]`.
   Esses marcadores devem ser escritos exatamente dessa forma, sem espaços ou
-  quebras adicionais, para que a API consiga localizá-los corretamente.
+  quebras adicionais, para que a API consiga localizá-los corretamente. Caso o Word insira marcas de correção que quebrem o texto em várias tags, a API tenta unir as partes automaticamente, mas revise o modelo para mantê-los contínuos.
 
 ## Interface
 

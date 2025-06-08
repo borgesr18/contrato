@@ -19,7 +19,8 @@ export default async function handler(req, res) {
 
   // Map the received fields to the placeholders in the document
   // Mapeamento de campos do formulário para o template
-  const templateData = {
+  // Remove Word correction tags and rejoin placeholders that
+  // might have been broken across <w:t> nodes or <w:proofErr> tags.
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
     'Profissão': data.profissao,

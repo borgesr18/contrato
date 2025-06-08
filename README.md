@@ -17,6 +17,7 @@ This project uses Next.js and Tailwind CSS to create a contract generation form 
    ```
    npm run build
    ```
+4. Certifique-se de utilizar o Node.js na versão 18 ou superior, conforme definido em `package.json`.
 
 ## Functionality
 

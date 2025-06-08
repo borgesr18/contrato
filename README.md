@@ -24,6 +24,8 @@ This project uses Next.js and Tailwind CSS to create a contract generation form 
 - The form in `pages/index.js` collects user data (including Estado civil and Profissão) and posts it to `/api/gerarContrato`.
 - The API fills `Contrato Vitorino.docx` with the provided data using Docxtemplater and then emails the result using the credentials defined in `EMAIL_USER` and `EMAIL_PASS` environment variables. O arquivo não é salvo em disco no ambiente serverless da Vercel.
 - Ensure that the Word template contains the placeholders `[EstadoCivil]` and `[Profissão]`.
+  Esses marcadores devem ser escritos exatamente dessa forma, sem espaços ou
+  quebras adicionais, para que a API consiga localizá-los corretamente.
 
 ## Interface
 

@@ -28,6 +28,11 @@ export default async function handler(req, res) {
     Emissor: data.orgaoRg,
     Endereço: data.endereco,
     Número: data.numero,
+    CPF: data.cpf,
+    RG: data.rg,
+    Emissor: data.orgaoRg,
+    Endereço: data.endereco,
+    Número: data.numero,
   const zip = new PizZip(content);
   const xmlPath = 'word/document.xml';
   let xml = zip.file(xmlPath).asText();
@@ -55,6 +60,8 @@ export default async function handler(req, res) {
   const content = await fs.readFile(templatePath, 'binary');
   const zip = new PizZip(content);
 
+  // Remove Word correction tags and rejoin placeholders that
+  // might have been broken across <w:t> nodes or <w:proofErr> tags.
   // Fix placeholders possibly split across multiple tags
   const xmlPath = 'word/document.xml';
   let xml = zip.file(xmlPath).asText();
@@ -157,6 +164,10 @@ export default async function handler(req, res) {
         },
       ],
     });
+  } catch (err) {
+    console.error('Falha ao enviar email:', err);
+    return res.status(500).json({
+      error: 'Falha ao enviar email',
   } catch (err) {
     console.error('Falha ao enviar email:', err);
     return res.status(500).json({

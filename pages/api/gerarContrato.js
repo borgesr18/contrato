@@ -17,17 +17,16 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Email configuration missing' });
   }
 
-  // Map the received fields to the placeholders in the document
+  // Dados para preencher os campos do contrato
   const templateData = {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
-    'Profissão': data.profissao,
     Profissao: data.profissao,
     CPF: data.cpf,
     RG: data.rg,
     Emissor: data.orgaoRg,
-    Endereço: data.endereco,
-    Número: data.numero,
+    Endereco: data.endereco,
+    Numero: data.numero,
     Complemento: data.complemento,
     Bairro: data.bairro,
     Cidade: data.cidade,
@@ -40,58 +39,40 @@ export default async function handler(req, res) {
     'CPF Test2': data.testemunha2Cpf,
   };
 
-  // Load and adjust the Word document
-  const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
-  const content = await fs.readFile(templatePath, 'binary');
-  let zip = new PizZip(content);
-
-  // Fix placeholders that Word may split across multiple runs
-  // Fix placeholders split by Word correction marks
-  let xml = zip.file('word/document.xml').asText();
-  xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
-  xml = xml.replace(
-    /<w:t>\[<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>([^<]*)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g,
-    '[$1]'
-  );
-  zip.file('word/document.xml', xml);
-
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true,
-    delimiters: { start: '[', end: ']' },
-    parser: tag => ({ get: scope => scope[tag] }),
-  });
-
-  doc.setData(templateData);
-
   try {
+    const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
+    const content = await fs.readFile(templatePath); // ✅ Lê como buffer (sem 'binary')
+    let zip = new PizZip(content);
+
+    // Correção para placeholders quebrados pelo Word
+    let xml = zip.file('word/document.xml').asText();
+    xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
+    xml = xml.replace(
+      /<w:t>\[<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>([^<]*)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g,
+      '[$1]'
+    );
+    zip.file('word/document.xml', xml);
+
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: '[', end: ']' },
+      parser: tag => ({ get: scope => scope[tag] }),
+    });
+
+    doc.setData(templateData);
     doc.render();
-  } catch (err) {
-    console.error('Erro ao preencher o contrato:', err);
-    return res.status(500).json({ error: 'Erro ao preencher o contrato' });
-  }
 
-  const buffer = doc.getZip().generate({ type: 'nodebuffer' });
-  const filename = 'Contrato Preenchido.docx';
-  console.log('Buffer size:', buffer.length);
-  const outputPath = path.join(process.cwd(), filename);
-  try {
-    await fs.writeFile(outputPath, buffer);
-  } catch (err) {
-    console.error('Falha ao salvar contrato:', err);
-    // continua mesmo se nao conseguir salvar o arquivo
-  }
-  await fs.writeFile(outputPath, buffer);
+    const buffer = doc.getZip().generate({ type: 'nodebuffer' });
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-  try {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: 'rba1807@gmail.com',
@@ -99,19 +80,16 @@ export default async function handler(req, res) {
       text: 'Segue o contrato preenchido em anexo.',
       attachments: [
         {
-          filename,
+          filename: 'Contrato Preenchido.docx',
           content: buffer,
         },
       ],
     });
-  } catch (err) {
-    console.error('Falha ao enviar email:', err);
-    return res.status(500).json({
-      error: 'Falha ao enviar email',
-      details: err.message,
-    });
-    return res.status(500).json({ error: 'Falha ao enviar email' });
-  }
 
-  return res.status(200).json({ status: 'success' });
+    return res.status(200).json({ status: 'success' });
+
+  } catch (err) {
+    console.error('Erro:', err);
+    return res.status(500).json({ error: 'Erro ao gerar ou enviar o contrato', details: err.message });
+  }
 }

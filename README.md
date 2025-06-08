@@ -20,6 +20,17 @@ This project uses Next.js and Tailwind CSS to create a contract generation form 
 
 ## Functionality
 
-- The form in `pages/index.js` collects user data and posts it to `/api/gerarContrato`.
-- The API fills `Contrato Vitorino.docx` with the provided data using Docxtemplater, saves the result, and emails it to `meuemail@exemplo.com`.
+- The form in `pages/index.js` collects user data (including Estado civil and Profissão) and posts it to `/api/gerarContrato`.
+- The API fills `Contrato Vitorino.docx` with the provided data using Docxtemplater and then emails the result using the credentials defined in `EMAIL_USER` and `EMAIL_PASS` environment variables. O arquivo não é salvo em disco no ambiente serverless da Vercel.
+- Ensure that the Word template contains the placeholders `[EstadoCivil]` and `[Profissão]`.
 
+## Email configuration
+
+Create a `.env.local` file in the project root and define the Gmail credentials used to send the contract:
+
+```
+EMAIL_USER=seuusuario@gmail.com
+EMAIL_PASS=sua_senha_ou_app_password
+```
+
+If sua conta usa verificação em duas etapas, crie uma senha de aplicativo no painel de segurança do Google e use esse valor em `EMAIL_PASS`.

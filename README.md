@@ -26,6 +26,7 @@ This project uses Next.js and Tailwind CSS to create a contract generation form 
 - Ensure that the Word template contains the placeholders `[EstadoCivil]` and `[Profissão]`.
   Esses marcadores devem ser escritos exatamente dessa forma, sem espaços ou
   quebras adicionais, para que a API consiga localizá-los corretamente. Caso o Word insira marcas de correção que quebrem o texto em várias tags, a API tenta unir as partes automaticamente, mas revise o modelo para mantê-los contínuos.
+  quebras adicionais, para que a API consiga localizá-los corretamente.
 
 ## Interface
 
@@ -37,9 +38,18 @@ Create a `.env.local` file in the project root (see `.env.local.example` for ref
 
 **Importante:** este arquivo contem dados sensíveis e não deve ser versionado no Git.
 
+Create a `.env.local` file in the project root (see `.env.local.example` for reference) and define the Gmail credentials used to send the contract:
+
+**Importante:** este arquivo contem dados sensíveis e não deve ser versionado no Git.
+
+## Email configuration
+
+Create a `.env.local` file in the project root and define the Gmail credentials used to send the contract:
+
 ```
 EMAIL_USER=seuusuario@gmail.com
 EMAIL_PASS=sua_senha_ou_app_password
 ```
 
 Se sua conta usar verificação em duas etapas, crie uma senha de aplicativo no painel de segurança do Google e use esse valor em `EMAIL_PASS`.
+If sua conta usa verificação em duas etapas, crie uma senha de aplicativo no painel de segurança do Google e use esse valor em `EMAIL_PASS`.

@@ -18,6 +18,7 @@ export default async function handler(req, res) {
   }
 
   // Map the received fields to the placeholders in the document
+  // Mapeamento de campos do formulário para o template
   const templateData = {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
@@ -27,6 +28,21 @@ export default async function handler(req, res) {
     Emissor: data.orgaoRg,
     Endereço: data.endereco,
     Número: data.numero,
+    CPF: data.cpf,
+    RG: data.rg,
+    Emissor: data.orgaoRg,
+    Endereço: data.endereco,
+    Número: data.numero,
+  const zip = new PizZip(content);
+  const xmlPath = 'word/document.xml';
+  let xml = zip.file(xmlPath).asText();
+  zip.file(xmlPath, xml);
+    Profissao: data.profissao,
+    CPF: data.cpf,
+    RG: data.rg,
+    Emissor: data.orgaoRg,
+    Endereco: data.endereco,
+    Numero: data.numero,
     Complemento: data.complemento,
     Bairro: data.bairro,
     Cidade: data.cidade,
@@ -46,6 +62,7 @@ export default async function handler(req, res) {
 
   // Remove Word correction tags and rejoin placeholders that
   // might have been broken across <w:t> nodes or <w:proofErr> tags.
+  // Fix placeholders possibly split across multiple tags
   const xmlPath = 'word/document.xml';
   let xml = zip.file(xmlPath).asText();
   xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
@@ -81,6 +98,59 @@ export default async function handler(req, res) {
   });
 
   try {
+  let zip = new PizZip(content);
+
+  // Fix placeholders possibly split across multiple tags
+  let xml = zip.file('word/document.xml').asText();
+  xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
+  xml = xml.replace(/\[(?:[^\]]|<[^>]+>)*\]/g, (m) => m.replace(/<[^>]+>/g, ''));
+  // Fix placeholders that Word may split across multiple runs
+  // Fix placeholders split by Word correction marks
+  let xml = zip.file('word/document.xml').asText();
+  xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
+  xml = xml.replace(
+    /<w:t>\[<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>([^<]*)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g,
+    '[$1]'
+  );
+  zip.file('word/document.xml', xml);
+  try {
+    // Carrega o template .docx
+    const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
+    const content = await fs.readFile(templatePath);
+
+    // Corrige problemas causados por marcas do Word
+    let zip = new PizZip(content);
+    let xml = zip.file('word/document.xml').asText();
+    xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
+    xml = xml.replace(
+      /<w:t>\[<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>([^<]*)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g,
+      '[$1]'
+    );
+    zip.file('word/document.xml', xml);
+
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: '[', end: ']' },
+      parser: tag => ({ get: scope => scope[tag] }),
+    });
+
+    // Preenche os dados no contrato
+    doc.setData(templateData);
+    doc.render();
+
+    const buffer = doc.getZip().generate({ type: 'nodebuffer' });
+
+    // Configura transporte de e-mail
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Envia o e-mail com o contrato anexado
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: 'rba1807@gmail.com',
@@ -89,6 +159,7 @@ export default async function handler(req, res) {
       attachments: [
         {
           filename,
+          filename: 'Contrato Preenchido.docx',
           content: buffer,
         },
       ],
@@ -97,6 +168,17 @@ export default async function handler(req, res) {
     console.error('Falha ao enviar email:', err);
     return res.status(500).json({
       error: 'Falha ao enviar email',
+  } catch (err) {
+    console.error('Falha ao enviar email:', err);
+    return res.status(500).json({
+      error: 'Falha ao enviar email',
+
+    return res.status(200).json({ status: 'success' });
+
+  } catch (err) {
+    console.error('Falha ao gerar ou enviar o contrato:', err);
+    return res.status(500).json({
+      error: 'Falha ao gerar ou enviar o contrato',
       details: err.message,
     });
   }

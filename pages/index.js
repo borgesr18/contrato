@@ -37,31 +37,38 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      if (res.ok) setStatus('Enviado com sucesso!');
-      else setStatus('Falha ao enviar.');
+      if (res.ok) {
+        setStatus('Enviado com sucesso!');
+      } else {
+        const errText = await res.text();
+        console.error('Erro no envio:', errText);
+        setStatus('Falha ao enviar.');
+      }
     } catch (err) {
+      console.error('Erro de rede:', err);
       setStatus('Erro ao enviar.');
     }
   };
 
   const input = (label, name, type = 'text') => (
-    <div className="mb-4">
-      <label className="block font-medium mb-1" htmlFor={name}>{label}</label>
+    <div className="flex flex-col">
+      <label className="mb-1 font-medium" htmlFor={name}>{label}</label>
       <input
         id={name}
         name={name}
         type={type}
         value={formData[name]}
         onChange={handleChange}
-        className="w-full border rounded px-3 py-2"
+        required
+        className="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
       />
     </div>
   );
 
   return (
-    <div className="max-w-xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Contrato</h1>
-      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div className="mx-auto max-w-2xl p-4">
+      <h1 className="mb-6 text-2xl font-bold text-center">Contrato</h1>
+      <form onSubmit={handleSubmit} className="grid gap-4 bg-white p-6 shadow-md rounded-md sm:grid-cols-2">
         {input('Nome completo', 'nome')}
         {input('CPF', 'cpf')}
         {input('RG', 'rg')}
@@ -80,12 +87,12 @@ export default function Home() {
         {input('CPF da Testemunha 1', 'testemunha1Cpf')}
         {input('Nome da Testemunha 2', 'testemunha2Nome')}
         {input('CPF da Testemunha 2', 'testemunha2Cpf')}
-        <div className="flex items-center justify-between">
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="submit">
+        <div className="sm:col-span-2 flex justify-center mt-2">
+          <button className="rounded bg-blue-500 px-6 py-2 font-bold text-white hover:bg-blue-700" type="submit">
             Enviar
           </button>
         </div>
-        {status && <p className="mt-4 text-center">{status}</p>}
+        {status && <p className="sm:col-span-2 mt-2 text-center">{status}</p>}
       </form>
     </div>
   );

@@ -21,6 +21,11 @@ export default async function handler(req, res) {
   const templateData = {
     Comprador: data.nome,
     EstadoCivil: data.estadoCivil,
+    'Profissão': data.profissao,
+  const zip = new PizZip(content);
+  const xmlPath = 'word/document.xml';
+  let xml = zip.file(xmlPath).asText();
+  zip.file(xmlPath, xml);
     Profissao: data.profissao,
     CPF: data.cpf,
     RG: data.rg,
@@ -39,6 +44,24 @@ export default async function handler(req, res) {
     'CPF Test2': data.testemunha2Cpf,
   };
 
+  // Load and adjust the Word document
+  const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');
+  const content = await fs.readFile(templatePath, 'binary');
+  let zip = new PizZip(content);
+
+  // Fix placeholders possibly split across multiple tags
+  let xml = zip.file('word/document.xml').asText();
+  xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
+  xml = xml.replace(/\[(?:[^\]]|<[^>]+>)*\]/g, (m) => m.replace(/<[^>]+>/g, ''));
+  // Fix placeholders that Word may split across multiple runs
+  // Fix placeholders split by Word correction marks
+  let xml = zip.file('word/document.xml').asText();
+  xml = xml.replace(/<w:proofErr[^>]*\/>/g, '');
+  xml = xml.replace(
+    /<w:t>\[<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>([^<]*)<\/w:t><\/w:r>\s*<w:r[^>]*>\s*(?:<w:rPr>.*?<\/w:rPr>)?\s*<w:t>\]/g,
+    '[$1]'
+  );
+  zip.file('word/document.xml', xml);
   try {
     // Carrega o template .docx
     const templatePath = path.join(process.cwd(), 'Contrato Vitorino.docx');

@@ -12,6 +12,11 @@ export default async function handler(req, res) {
 
   const data = req.body;
 
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error('EMAIL_USER or EMAIL_PASS environment variable not set');
+    return res.status(500).json({ error: 'Email configuration missing' });
+  }
+
   // Map the received fields to the placeholders in the document
   const templateData = {
     Comprador: data.nome,
@@ -66,6 +71,12 @@ export default async function handler(req, res) {
   const buffer = doc.getZip().generate({ type: 'nodebuffer' });
   const filename = 'Contrato Preenchido.docx';
   const outputPath = path.join(process.cwd(), filename);
+  try {
+    await fs.writeFile(outputPath, buffer);
+  } catch (err) {
+    console.error('Falha ao salvar contrato:', err);
+    // continua mesmo se nao conseguir salvar o arquivo
+  }
   await fs.writeFile(outputPath, buffer);
 
   const transporter = nodemailer.createTransport({
@@ -91,6 +102,10 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('Falha ao enviar email:', err);
+    return res.status(500).json({
+      error: 'Falha ao enviar email',
+      details: err.message,
+    });
     return res.status(500).json({ error: 'Falha ao enviar email' });
   }
 
